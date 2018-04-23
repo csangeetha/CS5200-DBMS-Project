@@ -25,6 +25,39 @@ public class services {
 			return customers;
 		}
 		
+		@GET
+		@Path("allUsers")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Collection<User> getAllUsersOnly() {
+			return AdminDao.findAllUsers(ConnectionDao.getConnection());
+		}
+		
+		@GET
+		@Path("getAllRestOfOwner/{resOId}")
+		@Produces(MediaType.APPLICATION_JSON)
+		public List<Restaurant> getAllRestOfOwner(@PathParam("resOId") int resOId){
+			RestaurantDao rDao= RestaurantDao.getInstance();
+			return rDao.findRestaurantByOwnerId(ConnectionDao.getConnection(), resOId);
+		}
+		
+		@GET
+		@Path("getAllRestFollowers/{resOId}")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Collection<Customer> getAllRestFollowers(@PathParam("resOId") int resOId){
+			RestaurantOwnerDao roDao= RestaurantOwnerDao.getInstance();
+			return roDao.getAllRestFollowers(ConnectionDao.getConnection(), resOId);
+		}
+		
+		@POST
+		@Path("deleteUserById/{userId}")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+		public int deleteUserById(@PathParam("userId") int userId) {
+			return AdminDao.deleteUser(ConnectionDao.getConnection(), userId);
+	    }
+		
+		
+		
 		@POST
 		@Path("createFavRestaurant/{custId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
@@ -42,11 +75,19 @@ public class services {
 		}
 		
 		
+		
 		@GET
 		@Path("getAllFav/{custId}")
 		@Produces(MediaType.APPLICATION_JSON)
 		public Collection<Restaurant> getAllFav(@PathParam("custId") int custId) {
 			return CustomerDao.findFavRestaurant(ConnectionDao.getConnection(), custId);
+		}
+		
+		@GET
+		@Path("getAllFavChef/{custId}")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Collection<Chef> getAllFavChef(@PathParam("custId") int custId){
+			return CustomerDao.findFavChef(ConnectionDao.getConnection(), custId);
 		}
 		
 		@GET
@@ -89,6 +130,14 @@ public class services {
 	    }
 	    
 	    @POST
+	    @Path("admin")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public User userByCredentials(User data) {
+	    	return CustomerDao.findUserByCredentials(ConnectionDao.getConnection(), data.getUsername(), data.getPassword());
+	    }
+	    
+	    @POST
 	    @Path("chef")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.APPLICATION_JSON)
@@ -103,7 +152,7 @@ public class services {
 	    @Path("owner")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.APPLICATION_JSON)
-	    public ResturantOwner ownerByCredentials(Chef data) {
+	    public ResturantOwner ownerByCredentials(ResturantOwner data) {
 	    	System.out.println("customerLogin ");
 	    	System.out.println(data.getUsername());
             return RestaurantOwnerDao.findOwnerByCredentials(ConnectionDao.getConnection(), data.getUsername(), data.getPassword());
@@ -191,6 +240,14 @@ public class services {
 	    }
 	    
 	    @POST
+	    @Path("update-user/{userId}")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int updateOwner(@PathParam("userId")int userId, User user) {
+	    	return AdminDao.updateUser(ConnectionDao.getConnection(), userId, user);
+	    }
+	    
+	    @POST
 	    @Path("updateowner")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.TEXT_PLAIN)
@@ -211,11 +268,11 @@ public class services {
 	    }
 	    
 	    @POST
-	    @Path("restaurantcreation")
+	    @Path("restaurantcreation/{ownerId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.APPLICATION_JSON)
-	    public int createRestaurant(Restaurant restaurant) {
-	    	return RestaurantDao.createRestauraunt(ConnectionDao.getConnection(), restaurant);
+	    public int createRestaurant(@PathParam("ownerId")int ownerId,Restaurant restaurant) {
+	    	return RestaurantDao.createRestauraunt(ConnectionDao.getConnection(), ownerId,restaurant);
 	    }
 	    
 	    @POST
@@ -239,13 +296,12 @@ public class services {
 	    }
 	    
 	    @POST
-	    @Path("deleterestaurant")
+	    @Path("deleterestaurant/{resId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response deleteRestaurant(int restId) {
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int deleteRestaurant(@PathParam("resId") int restId) {
 	    	System.out.println("In restDelete method");
-	    	RestaurantDao.deleteRestaurant(ConnectionDao.getConnection(), restId);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+	    	return RestaurantDao.deleteRestaurant(ConnectionDao.getConnection(), restId);
 	    }
 	    
 	    @POST
@@ -305,11 +361,18 @@ public class services {
 	    }
 	    
 	    @POST
-	    @Path("foodRecpcreation")
+	    @Path("foodRecpcreation/{foodRecpId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.APPLICATION_JSON)
-	    public int createFoodRecp(int foodRecpId, FoodRecipe foodRecipe) {
+	    public int createFoodRecp(@PathParam("foodRecpId")int foodRecpId, FoodRecipe foodRecipe) {
 	    	return FoodRecipeDao.createFoodRecipe(ConnectionDao.getConnection(), foodRecpId, foodRecipe);
+	    }
+	    
+	    @GET
+	    @Path("getAllOrdersOwner/{oId}")
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public Collection<Order> createFoodRecp(@PathParam("oId")int oId) {
+	    	return RestaurantOwnerDao.getAllOrders(ConnectionDao.getConnection(), oId);
 	    }
 	    
 	    @POST
@@ -323,33 +386,39 @@ public class services {
 	    }
 	    
 	    @POST
-	    @Path("deletefoodRecp")
+	    @Path("deletefoodRecp/{frId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response deleteFoodRecp(int frId) {
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int deleteFoodRecp(@PathParam("frId")int frId) {
 	    	System.out.println("In deleteFoodRecp method");
-	    	FoodRecipeDao.deleteFoodRecipe(ConnectionDao.getConnection(), frId);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+	    	return FoodRecipeDao.deleteFoodRecipe(ConnectionDao.getConnection(), frId);
 	    }
 	    
 	    @POST
 	    @Path("createorder")
 	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response createOrder(@QueryParam("userId") int userId,@QueryParam("restId") int restId,@QueryParam("fmId") int fmId, Order order) {
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int createOrder(@QueryParam("userId") int userId,@QueryParam("restId") int restId,@QueryParam("fmId") int fmId, Order order) {
 	    	System.out.println("createOrder method");
-            OrderDao.createOrder(ConnectionDao.getConnection(), userId, restId, fmId, order);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+            return OrderDao.createOrder(ConnectionDao.getConnection(), userId, restId, fmId, order);
+            
 	    }
 	    
+	    @GET
+	    @Path("getAllfollowers/{chefId}")
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public List<Customer> getAllFollwers(@PathParam("chefId") int chefId){
+	    	return ChefDao.findAllFollowers(ConnectionDao.getConnection(),chefId);
+	    }
+	
+	    
 	    @POST
-	    @Path("orderupdate")
+	    @Path("orderupdate/{ordId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response orderUpdate(int ordId, Order order) {
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int orderUpdate(@PathParam("ordId")int ordId, Order order) {
 	    	System.out.println("orderUpdate method");
-	    	OrderDao.updateOrder(ConnectionDao.getConnection(), ordId, order);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+	    	return OrderDao.updateOrder(ConnectionDao.getConnection(), ordId, order);
 	    }
 	    
 	    @POST
@@ -420,7 +489,7 @@ public class services {
 			return fDao.findAllFoodRecipe(ConnectionDao.getConnection());
 		}
 	    
-	    @DELETE
+	    @POST
 	    @Path("deleterateReview/{rid}")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.APPLICATION_JSON)
@@ -428,6 +497,46 @@ public class services {
 	    	System.out.println("In deleteRateReview method");
 	    	return RateAndReviewDao.deleteRateReview(ConnectionDao.getConnection(), rid );
 	    }
+	    
+	    @POST
+	    @Path("deleteFavChef/{favCid}")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int deleteFavChef(@PathParam("favCid")int favCid) {
+	    	System.out.println("In deletefavchef method");
+	    	return CustomerDao.deleteFavChef(ConnectionDao.getConnection(), favCid);
+	    }
+	    
+	    @POST
+	    @Path("deleteFavRestaurant/{favRid}")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int deleteFavRestaurant(@PathParam("favRid")int favRid) {
+	    	System.out.println("In deletefavrest method");
+	    	return CustomerDao.deleteFavRestaurant(ConnectionDao.getConnection(), favRid );
+	    }
+	    
+	    @GET
+	    @Path("listAllChefs")
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public List<Chef> findAllchef(){
+	    	return ChefDao.findAllChef(ConnectionDao.getConnection());
+	    }
+	    
+	    @GET
+	    @Path("listAllChefRecipes/{chefId}")
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public List<FoodRecipe> getAllChefRecipes(@PathParam("chefId") int chefId){
+	    	return ChefDao.findAllRecipes(ConnectionDao.getConnection(), chefId);
+	    }
+	    
+	    @GET
+	    @Path("makeChefFav")
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int makeChefFav(@QueryParam("custId") int custId, @QueryParam("chefId") int chefId) {
+	    	return CustomerDao.makeChefFav(ConnectionDao.getConnection(), custId,chefId);
+	    }
+	    
 	    
 	    
 	    

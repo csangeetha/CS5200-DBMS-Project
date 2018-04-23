@@ -4,6 +4,19 @@ import java.util.Collection;
 
 public class Chef extends User {
 	private int chefId;
+	private int favId;
+	public int getFavId() {
+		return favId;
+	}
+	public void setFavId(int favId) {
+		this.favId = favId;
+	}
+	public Restaurant getRestaurant() {
+		return restaurant;
+	}
+	public void setRestaurant(Restaurant restaurant) {
+		this.restaurant = restaurant;
+	}
 	private Restaurant restaurant;
 	private Collection<FoodMenu> foodMenus;
 	private Collection<FoodRecipe> foodRecipes;

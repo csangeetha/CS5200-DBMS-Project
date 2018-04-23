@@ -4,6 +4,13 @@ import java.util.Collection;
 
 public class Restaurant {
 	private int restaurantId;
+	private int favIdRes;
+	public int getFavIdRes() {
+		return favIdRes;
+	}
+	public void setFavIdRes(int favIdRes) {
+		this.favIdRes = favIdRes;
+	}
 	private String restaurantName;
 	private int numberOfFavorites;
 	private int rating;

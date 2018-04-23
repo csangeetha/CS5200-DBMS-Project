@@ -4,7 +4,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.northeastern.cs5200.models.Restaurant;
@@ -12,10 +14,11 @@ import edu.northeastern.cs5200.models.Restaurant;
 import java.sql.Connection;
 
 public class RestaurantDao extends ConnectionDao {
-	private final static String createRestaurant = "INSERT INTO resturant (restaurantName, numberOfFavorites, rating) VALUES(?,?,?)";
+	private final static String createRestaurant = "INSERT INTO resturant (restaurantName, numberOfFavorites, rating,owner_id) VALUES(?,?,?,?)";
 	private final static String updateRestaurant = "UPDATE resturant SET resturant.name = ?, resturant.numberOfFavorites = ?, resturant.rating=?  WHERE resturant.id = ?";
 	private final static String findRestaurantId = "SELECT * FROM resturant WHERE id = ?";
 	private final static String deleteRestaurant = "DELETE FROM resturant WHERE resturant.id=?";
+	private final static String findRestaurantOwnerId = "SELECT * FROM resturant WHERE owner_id = ?";
 	
 	private RestaurantDao() { }
 	private static RestaurantDao instance = null;
@@ -31,7 +34,7 @@ public class RestaurantDao extends ConnectionDao {
 		return restaurant;
 	}
 	
-	public static int createRestauraunt(Connection conn,Restaurant rest) {
+	public static int createRestauraunt(Connection conn,int ownerId,Restaurant rest) {
 		conn = null;
 		PreparedStatement statement = null;
 		ResultSet result = null;
@@ -42,6 +45,7 @@ public class RestaurantDao extends ConnectionDao {
 			statement.setString(1, rest.getRestaurantName());
 			statement.setInt(2, rest.getNumberOfFavorites());
 			statement.setInt(3, rest.getRating());
+			statement.setInt(4, ownerId);
 			statement.executeUpdate();
 			result = statement.getGeneratedKeys();
 			if(result.next()) {		   
@@ -137,6 +141,40 @@ public class RestaurantDao extends ConnectionDao {
 			e.printStackTrace();
 		} 
 		return rest;
+	}
+	
+	public static List<Restaurant> findRestaurantByOwnerId(Connection conn, int ownerId) {
+		List<Restaurant> rests = new ArrayList<Restaurant>();
+		conn = null;
+		PreparedStatement statement = null;
+		ResultSet result = null;
+		try {
+			Class.forName(jdbc_drvr);
+			conn = DriverManager.getConnection(url, user_name, psswd);
+			statement = conn.prepareStatement(findRestaurantOwnerId);
+			statement.setInt(1, ownerId);
+			result = statement.executeQuery();
+			while (result.next()) {
+				Restaurant rest = new Restaurant();
+				String restName = result.getString("restaurantName");
+				int fav = result.getInt("numberOfFavorites");
+				int rating = result.getInt("rating");
+				rest.setRestaurantId(result.getInt("id"));
+				rest.setRestaurantName(restName);
+				rest.setNumberOfFavorites(fav);
+				rest.setRating(rating);
+				rests.add(rest);
+			}
+			statement.close();
+			conn.close();
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		} 
+		return rests;
 	}
 
 }

@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class OrderDao extends ConnectionDao {
 	private final static String createOrder = "INSERT INTO `order` (date_of_order, order_total,  status, payment_type, food_id, user_id, resturant_id) VALUES(?,?,?,?,?,?,?)";
-	private final static String updateOrder = "UPDATE order SET order.date_of_order = ?, order.order_total = ?, order.promotion_id = ?, order.status = ?, order.payment_type = ? WHERE order.id = ?;";
+	private final static String updateOrder = "UPDATE `order` SET `order`.date_of_order = ?, `order`.order_total = ?,  `order`.status = ?, `order`.payment_type = ? WHERE `order`.id = ?;";
 	private final static String deleteOrder = "Delete FROM order WHERE order.id = ?;";
 	private final static String findOrderId =	"SELECT * FROM order WHERE id = ?";
 	
@@ -75,10 +75,9 @@ public class OrderDao extends ConnectionDao {
 			statement = conn.prepareStatement(updateOrder);
 			statement.setString(1, ord.getDateOfOrder());
 			statement.setInt(2, ord.getOrderTotal());
-			statement.setInt(3, ord.getPromotion());
-			statement.setString(4, ord.getStatus());
-			statement.setString(5, ord.getPaymentType());
-			statement.setInt(3, ordId);
+			statement.setString(3, ord.getStatus());
+			statement.setString(4, ord.getPaymentType());
+			statement.setInt(5, ordId);
 			statement.executeUpdate();
 			ordr.put(ordId, ord);
 			statement.close();

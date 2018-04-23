@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class FoodRecipeDao extends ConnectionDao {
-	private static final String createFoodRecipe = "INSERT INTO food_recipe (`name`, `ingredients`, `dificulty_level`, 'cook_time', 'numberOfFav', 'food_menu_id') VALUES(?,?,?,?,?,?)";
+	private static final String createFoodRecipe = "INSERT INTO food_recipe (name, ingredients, dificulty_level, cook_time, chef_id) VALUES(?,?,?,?,?)";
 	private static final String updateFoodRecipe = "UPDATE food_recipe SET food_recipe.name = ?, food_recipe.ingredients = ?, food_recipe.dificulty_level = ?, food_recipe.cook_time = ?, food_recipe.numberOfFav = ? WHERE food_recipe.id = ?;";
 	private static final String deleteFoodRecipe = "Delete FROM food_recipe WHERE food_recipe.id = ?;";
 	private static final String findFoodRecipeId =	"SELECT * FROM food_recipe WHERE id = ?";
@@ -46,8 +46,7 @@ public class FoodRecipeDao extends ConnectionDao {
 			statement.setString(2, foodRecipe.getIngredients());
 			statement.setString(3, foodRecipe.getDifficultyLevel());
 			statement.setInt(4, foodRecipe.getCookTime());
-			statement.setInt(5, foodRecipe.getNumberOfFavorites());
-			statement.setInt(6, foodRecpId);
+			statement.setInt(5, foodRecpId);
 			statement.executeUpdate();
 			result = statement.getGeneratedKeys();
 			if(result.next()) {		   
