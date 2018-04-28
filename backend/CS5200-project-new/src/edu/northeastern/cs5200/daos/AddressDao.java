@@ -12,9 +12,9 @@ import java.util.HashMap;
 
 public class AddressDao extends ConnectionDao {
 	private static final String createAddress = "INSERT INTO address (`street1`, `street2`, `city`, `state`, `zipcode`, `user_id`) VALUES(?,?,?,?,?,?)";
-	private static final String updateAddress = "UPDATE address SET street1 = ?, street2 = ?, city = ?, state = ?, zipcode = ?, user_id = ? WHERE address.id = ?;";
+	private static final String updateAddress = "UPDATE address SET street1 = ?, street2 = ?, city = ?, state = ?, zipcode = ?  WHERE address.id = ?";
 	private static final String deleteAddress = "Delete FROM address WHERE address.id = ?;";
-	private static final String findAddressId =	"SELECT * FROM address WHERE id = ?";
+	private static final String findAddressId =	"SELECT * FROM address WHERE user_id = ?";
 	private static AddressDao instance = null;
 	private static Map<Integer, Address> address = new HashMap<>();
 	
@@ -65,6 +65,7 @@ public class AddressDao extends ConnectionDao {
 	
 	public static int updateAddress(Connection conn, int addId, Address addr) {
 		conn = null;
+		int res = -1;
 		PreparedStatement statement = null;
 		try {
 			Class.forName(jdbc_drvr);
@@ -76,7 +77,7 @@ public class AddressDao extends ConnectionDao {
 			statement.setString(4, addr.getState());
 			statement.setString(5, addr.getZipcode());
 			statement.setInt(6, addId);
-			statement.executeUpdate();
+			res = statement.executeUpdate();
 			address.put(addId, addr);
 			statement.close();
 			conn.close();
@@ -87,7 +88,7 @@ public class AddressDao extends ConnectionDao {
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return 0;
+		return res;
 	}
 	
 	public static int deleteAddress(Connection conn, int addId) {
@@ -124,11 +125,13 @@ public class AddressDao extends ConnectionDao {
 			statement.setInt(1, addId);
 			result = statement.executeQuery();
 			if (result.next()) {
+				int id = result.getInt("id");
 				String street1 = result.getString("street1");
 				String street2 = result.getString("street2");
 				String city = result.getString("city");
 				String state = result.getString("state");
-				String zip = result.getString("zip");
+				String zip = result.getString("zipcode");
+				addr.setAddressId(id);
 				addr.setStreet1(street1);
 				addr.setStreet2(street2);
 				addr.setCity(city);

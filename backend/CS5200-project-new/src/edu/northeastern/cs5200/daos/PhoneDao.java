@@ -12,9 +12,9 @@ import java.util.HashMap;
 
 public class PhoneDao extends ConnectionDao {
 	private static final String createPhone = "INSERT INTO phone (`areacode`, `phonenumber`, `user_id`) VALUES(?,?,?)";
-	private static final String updatePhone = "UPDATE phone SET phone.areacode = ?, phone.phonenumber = ? WHERE phone.id = ?;";
+	private static final String updatePhone = "UPDATE phone SET phone.areacode = ?, phone.phonenumber = ? WHERE phone.id = ?";
 	private static final String deletePhone = "Delete FROM phone WHERE phone.id = ?;";
-	private static final String findPhoneId =	"SELECT * FROM phone WHERE id = ?";
+	private static final String findPhoneId =	"SELECT * FROM phone WHERE user_id = ?";
 	private static PhoneDao instance = null;
 	private static Map<Integer, Phone> phones = new HashMap<>();
 	
@@ -62,6 +62,7 @@ public class PhoneDao extends ConnectionDao {
 	
 	public static int updatePhone(Connection conn, int phId, Phone ph) {
 		conn = null;
+		int res = -1;
 		PreparedStatement statement = null;
 		try {
 			Class.forName(jdbc_drvr);
@@ -70,7 +71,7 @@ public class PhoneDao extends ConnectionDao {
 			statement.setInt(1, ph.getAreacode());
 			statement.setInt(2, ph.getPhoneNumber());
 			statement.setInt(3, phId);
-			statement.executeUpdate();
+			res = statement.executeUpdate();
 			phones.put(phId, ph);
 			statement.close();
 			conn.close();
@@ -81,7 +82,7 @@ public class PhoneDao extends ConnectionDao {
 		catch (SQLException e) {
 			e.printStackTrace();
 		} 
-		return 0;
+		return res;
 	}
 	
 	public static int deletePhone(Connection conn, int phId) {
@@ -118,8 +119,10 @@ public class PhoneDao extends ConnectionDao {
 			statement.setInt(1, phId);
 			result = statement.executeQuery();
 			if (result.next()) {
+				int id = result.getInt("id");
 				int areacode = result.getInt("areacode");
 				int phonenumber = result.getInt("phonenumber");
+				ph.setPhoneId(id);
 				ph.setAreacode(areacode);
 				ph.setPhoneNumber(phonenumber);
 			}

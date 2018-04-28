@@ -8,16 +8,22 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.Map;
 
+import edu.northeastern.cs5200.models.CustomerOrder;
 import edu.northeastern.cs5200.models.Order;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 public class OrderDao extends ConnectionDao {
 	private final static String createOrder = "INSERT INTO `order` (date_of_order, order_total,  status, payment_type, food_id, user_id, resturant_id) VALUES(?,?,?,?,?,?,?)";
 	private final static String updateOrder = "UPDATE `order` SET `order`.date_of_order = ?, `order`.order_total = ?,  `order`.status = ?, `order`.payment_type = ? WHERE `order`.id = ?;";
-	private final static String deleteOrder = "Delete FROM order WHERE order.id = ?;";
-	private final static String findOrderId =	"SELECT * FROM order WHERE id = ?";
+	private final static String deleteOrder = "Delete FROM `order` WHERE `order`.id = ?";
+	private final static String findOrderId =	"SELECT * FROM `order` WHERE id = ?";
+	private final static String findAllOrder =	"SELECT `order`.id as order_id, date_of_order, order_total,`status`as status_del,payment_type, restaurantName, food_recipe.name as food\r\n" + 
+			" FROM `order` JOIN resturant JOIN food_recipe  ON resturant.id=`order`.resturant_id AND `order`.food_id = food_recipe.id ";
 	
 	private static OrderDao instance = null;
 	private static Map<Integer, Order> ordr = new HashMap<>();
@@ -69,6 +75,7 @@ public class OrderDao extends ConnectionDao {
 	public static int updateOrder(Connection conn, int ordId, Order ord) {
 		conn = null;
 		PreparedStatement statement = null;
+		int res = -1;
 		try {
 			Class.forName(jdbc_drvr);
 			conn = DriverManager.getConnection(url, user_name, psswd);
@@ -78,7 +85,7 @@ public class OrderDao extends ConnectionDao {
 			statement.setString(3, ord.getStatus());
 			statement.setString(4, ord.getPaymentType());
 			statement.setInt(5, ordId);
-			statement.executeUpdate();
+			res = statement.executeUpdate();
 			ordr.put(ordId, ord);
 			statement.close();
 			conn.close();
@@ -89,18 +96,19 @@ public class OrderDao extends ConnectionDao {
 		catch (SQLException e) {
 			e.printStackTrace();
 		} 
-		return 0;
+		return res;
 	}
 	
 	public static int deleteOrder(Connection conn, int ordId) {
 		conn = null;
+		int res=-1;
 		PreparedStatement statement = null;
 		try {
 			Class.forName(jdbc_drvr);
 			conn = DriverManager.getConnection(url, user_name, psswd);
 			statement = conn.prepareStatement(deleteOrder);
 			statement.setInt(1,ordId);
-			statement.executeUpdate();
+			res= statement.executeUpdate();
 			ordr.remove(ordId);
 			statement.close();
 			conn.close();
@@ -111,7 +119,7 @@ public class OrderDao extends ConnectionDao {
 		catch (SQLException e) {
 			e.printStackTrace();
 		} 
-		return 0;
+		return res;
 	}
 	
 	public static Order findOrderById(Connection conn, int ordId) {
@@ -147,6 +155,46 @@ public class OrderDao extends ConnectionDao {
 			e.printStackTrace();
 		} 
 		return ord;
+	}
+	
+	public static Collection<CustomerOrder>  findAllOrder(Connection conn) {
+		List<CustomerOrder> cOrders = new ArrayList<CustomerOrder>();
+		conn = null;
+		PreparedStatement statement = null;
+		ResultSet res = null;
+		try {
+			Class.forName(jdbc_drvr);
+			conn = DriverManager.getConnection(url, user_name, psswd);
+			statement = conn.prepareStatement(findAllOrder);
+			res = statement.executeQuery();
+			while (res.next()) {
+				CustomerOrder cOrder = new CustomerOrder();
+				int orderId = res.getInt("order_id");
+				Date orderDate = res.getDate("date_of_order");
+				int orderTotal = res.getInt("order_total");
+				String status = res.getString("status_del");
+				String paymentType = res.getString("payment_type");
+				String restaurantname = res.getString("restaurantName");
+				String food = res.getString("food");
+				cOrder.setOrderId(orderId);
+				cOrder.setFoodName(food);
+				cOrder.setRestaurantName(restaurantname);
+				cOrder.setOrderDate((java.sql.Date) orderDate);
+				cOrder.setPaymentType(paymentType);
+				cOrder.setStatus(status);
+				cOrder.setOrderTotal(orderTotal);
+				cOrders.add(cOrder);
+			}
+			statement.close();
+			conn.close();
+		} 
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		} 
+		return cOrders;
 	}
 	
 	public static Order findOrderByCustomerId(Connection conn, int ordId) {

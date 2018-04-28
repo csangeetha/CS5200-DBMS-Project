@@ -26,6 +26,21 @@ public class services {
 		}
 		
 		@GET
+		@Path("address/{userId}")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Address getUserAddress(@PathParam("userId") int userId) {
+			return AddressDao.findAddressById(ConnectionDao.getConnection(), userId);
+		}
+		
+		@GET
+		@Path("phone/{userId}")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Phone getUserPhone(@PathParam("userId") int userId) {
+			return PhoneDao.findPhoneById(ConnectionDao.getConnection(), userId);
+		}
+		
+		
+		@GET
 		@Path("allUsers")
 		@Produces(MediaType.APPLICATION_JSON)
 		public Collection<User> getAllUsersOnly() {
@@ -74,6 +89,19 @@ public class services {
 			return CustomerDao.findOrdersOfCustomer(ConnectionDao.getConnection(), custId);
 		}
 		
+		@GET
+		@Path("getOrders")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Collection<CustomerOrder>  getOrders() {
+			return OrderDao.findAllOrder(ConnectionDao.getConnection());
+		}
+		
+		@GET
+		@Path("getAllReviewsAsAdmin")
+		@Produces(MediaType.APPLICATION_JSON)
+		public Collection<RateAndReview> getAllReviewsAsAdmin() {
+			return RateAndReviewDao.findAllReviews(ConnectionDao.getConnection());
+		}
 		
 		
 		@GET
@@ -248,6 +276,14 @@ public class services {
 	    }
 	    
 	    @POST
+	    @Path("update-review/{reviewId}")
+	    @Consumes(MediaType.APPLICATION_JSON)
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int updateOwner(@PathParam("reviewId")int reviewId, RateAndReview review) {
+	    	return RateAndReviewDao.updateRateReview(ConnectionDao.getConnection(), reviewId, review);
+	    }
+	    
+	    @POST
 	    @Path("updateowner")
 	    @Consumes(MediaType.APPLICATION_JSON)
 	    @Produces(MediaType.TEXT_PLAIN)
@@ -313,13 +349,11 @@ public class services {
 	    }
 	    
 	    @POST
-	    @Path("addressupdate")
+	    @Path("update-address/{addId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response addressUpdate(int addId, Address address) {
-	    	System.out.println("addressUpdate method");
-	    	AddressDao.updateAddress(ConnectionDao.getConnection(), addId, address);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int addressUpdate(@PathParam("addId") int addId, Address address) {
+	    	return AddressDao.updateAddress(ConnectionDao.getConnection(), addId, address);
 	    }
 	    
 	    @POST
@@ -341,13 +375,12 @@ public class services {
 	    }
 	      
 	    @POST
-	    @Path("phoneupdate")
+	    @Path("update-phone/{phId}")
 	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response phoneUpdate(int phId, Phone phone) {
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int phoneUpdate(@PathParam("phId") int phId, Phone phone) {
 	    	System.out.println("phoneUpdate method");
-	    	PhoneDao.updatePhone(ConnectionDao.getConnection(), phId, phone);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+	    	return PhoneDao.updatePhone(ConnectionDao.getConnection(), phId, phone);
 	    }
 	    
 	    @POST
@@ -422,13 +455,11 @@ public class services {
 	    }
 	    
 	    @POST
-	    @Path("deleteorder")
-	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.TEXT_PLAIN)
-	    public Response deleteOrder(int ordId) {
+	    @Path("deleteOrder/{ordId}")
+	    @Produces(MediaType.APPLICATION_JSON)
+	    public int deleteOrder(@PathParam("ordId") int ordId) {
 	    	System.out.println("In deleteOrder method");
-	    	OrderDao.deleteOrder(ConnectionDao.getConnection(), ordId);
-            return makeResponse("success", MediaType.TEXT_PLAIN);
+	    	return OrderDao.deleteOrder(ConnectionDao.getConnection(), ordId);
 	    }
 	    
 	    @POST

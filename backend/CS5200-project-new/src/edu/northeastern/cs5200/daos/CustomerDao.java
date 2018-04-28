@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class CustomerDao extends ConnectionDao {
+	private final static String userAddress = "SELECT * FROM address WHERE user_id=?";
+	private final static String userPhone = "SELECT * FROM phone WHERE user_id=?";
 	private final static String findUserByCredentials="SELECT * FROM user WHERE user.username=? AND user.password=?";
 	private final static String makeChefFav = "INSERT INTO favorite_chef(customer_id , chef_id) VALUES (?,?)";
 	private final static String deleteFavChef = "DELETE FROM favorite_chef WHERE favorite_chef.id=?";
